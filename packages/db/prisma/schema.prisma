@@ -1,0 +1,485 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  UNVERIFIED
+  TEMP_UNVERIFIED
+  SUSPENDED
+  BANNED
+  VERIFIED
+  TEMP_VERIFIED
+  EDITOR
+  ADMIN
+}
+
+enum VerificationStatus {
+  UNVERIFIED
+  PENDING
+  VERIFIED
+}
+
+enum Visibility {
+  PRIVATE
+  UNLISTED
+  PUBLIC
+}
+
+enum ContentType {
+  BLOG
+  JOURNAL
+  TRAVEL_PLAN
+}
+
+enum CommentStatus {
+  UNVERIFIED
+  VERIFIED
+  DELETED
+}
+
+enum OAuthProvider {
+  GOOGLE
+  APPLE
+  GITHUB
+  FACEBOOK
+}
+
+enum NotificationType {
+  NEW_COMMENT
+  COMMENT_REPLY
+  VERIFICATION_CHANGE
+  CHAT_MESSAGE
+  NEW_CONTENT
+}
+
+enum Season {
+  SPRING
+  SUMMER
+  AUTUMN
+  WINTER
+  WARM_SEASONS
+  COLD_SEASONS
+  ALL
+}
+
+enum TravelPlanBlockType {
+  DAY
+  CUSTOM
+}
+
+model User {
+  id                String   @id @default(uuid()) @db.Uuid
+  email             String   @unique
+  name              String   @unique
+  avatarUrl         String?
+  role              UserRole @default(UNVERIFIED)
+  verifiedPostCount Int      @default(0)
+  donationLinks     Json? // Array of { provider: string, url: string }
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  oauthAccounts          OAuthAccount[]
+  blogs                  Blog[]
+  journals               Journal[]
+  travelPlans            TravelPlan[]
+  comments               Comment[]
+  likes                  Like[]
+  saves                  Save[]
+  views                  ContentView[]
+  followers              Follow[]             @relation("following")
+  following              Follow[]             @relation("follower")
+  authorChats            PendingContentChat[] @relation("author")
+  editorChats            PendingContentChat[] @relation("editor")
+  chatMessages           ChatMessage[]
+  triggeredNotifications Notification[]       @relation("actor")
+  receivedNotifications  Notification[]       @relation("recipient")
+}
+
+model OAuthAccount {
+  id                String        @id @default(uuid()) @db.Uuid
+  userId            String        @db.Uuid
+  provider          OAuthProvider
+  providerAccountId String
+  createdAt         DateTime      @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@unique([userId, provider])
+}
+
+model Follow {
+  followerId  String @db.Uuid
+  followingId String @db.Uuid
+
+  follower  User @relation("follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@id([followerId, followingId])
+}
+
+model Tag {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @unique
+  isCustom  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  blogs       BlogTag[]
+  journals    JournalTag[]
+  travelPlans TravelPlanTag[]
+}
+
+model Location {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  latitude  Float
+  longitude Float
+  osmId     String?  @unique
+  createdAt DateTime @default(now())
+
+  blogs            BlogLocation[]
+  journals         JournalLocation[]
+  travelPlans      TravelPlanLocation[]
+  travelPlanBlocks TravelPlanBlockLocation[]
+}
+
+model Blog {
+  id                 String             @id @default(uuid()) @db.Uuid
+  authorId           String             @db.Uuid
+  journalId          String?            @db.Uuid
+  orderInJournal     Int?
+  title              String
+  slug               String             @unique
+  description        String
+  content            Json
+  featuredImageUrl   String?
+  visibility         Visibility         @default(PRIVATE)
+  verificationStatus VerificationStatus @default(UNVERIFIED)
+  viewCount          Int                @default(0)
+  fullReadCount      Int                @default(0)
+  likeCount          Int                @default(0)
+  saveCount          Int                @default(0)
+  commentCount       Int                @default(0)
+  popularity         Float              @default(0)
+  publishedAt        DateTime?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  author  User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  journal Journal? @relation(fields: [journalId], references: [id], onDelete: SetNull)
+
+  tags      BlogTag[]
+  locations BlogLocation[]
+  likes     Like[]
+  saves     Save[]
+  comments  Comment[]
+  views     ContentView[]
+  chats     PendingContentChat[]
+
+  @@index([authorId, visibility, verificationStatus])
+  @@index([visibility, verificationStatus, publishedAt])
+  @@index([visibility, verificationStatus, popularity])
+  @@index([journalId, orderInJournal])
+}
+
+model Journal {
+  id                 String             @id @default(uuid()) @db.Uuid
+  authorId           String             @db.Uuid
+  title              String
+  slug               String             @unique
+  description        String
+  featuredImageUrl   String?
+  visibility         Visibility         @default(PRIVATE)
+  verificationStatus VerificationStatus @default(UNVERIFIED)
+  blogCount          Int                @default(0)
+  viewCount          Int                @default(0)
+  fullReadCount      Int                @default(0)
+  likeCount          Int                @default(0)
+  saveCount          Int                @default(0)
+  commentCount       Int                @default(0)
+  popularity         Float              @default(0)
+  publishedAt        DateTime?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  blogs     Blog[]
+  tags      JournalTag[]
+  locations JournalLocation[]
+  likes     Like[]
+  saves     Save[]
+  comments  Comment[]
+  views     ContentView[]
+  chats     PendingContentChat[]
+
+  @@index([authorId, visibility, verificationStatus])
+  @@index([visibility, verificationStatus, publishedAt])
+  @@index([visibility, verificationStatus, popularity])
+}
+
+model TravelPlan {
+  id                 String             @id @default(uuid()) @db.Uuid
+  authorId           String             @db.Uuid
+  title              String
+  slug               String             @unique
+  description        String
+  featuredImageUrl   String?
+  season             Season             @default(ALL)
+  visibility         Visibility         @default(PRIVATE)
+  verificationStatus VerificationStatus @default(UNVERIFIED)
+  dayCount           Int                @default(0)
+  viewCount          Int                @default(0)
+  fullReadCount      Int                @default(0)
+  likeCount          Int                @default(0)
+  saveCount          Int                @default(0)
+  commentCount       Int                @default(0)
+  popularity         Float              @default(0)
+  publishedAt        DateTime?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  blocks    TravelPlanBlock[]
+  tags      TravelPlanTag[]
+  locations TravelPlanLocation[]
+  likes     Like[]
+  saves     Save[]
+  comments  Comment[]
+  views     ContentView[]
+  chats     PendingContentChat[]
+
+  @@index([authorId, visibility, verificationStatus])
+  @@index([visibility, verificationStatus, publishedAt])
+  @@index([visibility, verificationStatus, popularity])
+}
+
+model TravelPlanBlock {
+  id           String              @id @default(uuid()) @db.Uuid
+  travelPlanId String              @db.Uuid
+  type         TravelPlanBlockType
+  title        String
+  dayNumber    Int?
+  order        Int
+  content      Json
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  travelPlan TravelPlan @relation(fields: [travelPlanId], references: [id], onDelete: Cascade)
+
+  locations TravelPlanBlockLocation[]
+
+  @@index([travelPlanId, order])
+}
+
+model BlogTag {
+  blogId String @db.Uuid
+  tagId  String @db.Uuid
+
+  blog Blog @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([blogId, tagId])
+}
+
+model JournalTag {
+  journalId String @db.Uuid
+  tagId     String @db.Uuid
+
+  journal Journal @relation(fields: [journalId], references: [id], onDelete: Cascade)
+  tag     Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([journalId, tagId])
+}
+
+model TravelPlanTag {
+  travelPlanId String @db.Uuid
+  tagId        String @db.Uuid
+
+  travelPlan TravelPlan @relation(fields: [travelPlanId], references: [id], onDelete: Cascade)
+  tag        Tag        @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([travelPlanId, tagId])
+}
+
+model BlogLocation {
+  blogId     String @db.Uuid
+  locationId String @db.Uuid
+  order      Int
+
+  blog     Blog     @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  location Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  @@id([blogId, locationId])
+}
+
+model JournalLocation {
+  journalId  String @db.Uuid
+  locationId String @db.Uuid
+
+  journal  Journal  @relation(fields: [journalId], references: [id], onDelete: Cascade)
+  location Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  @@id([journalId, locationId])
+}
+
+model TravelPlanLocation {
+  travelPlanId String @db.Uuid
+  locationId   String @db.Uuid
+
+  travelPlan TravelPlan @relation(fields: [travelPlanId], references: [id], onDelete: Cascade)
+  location   Location   @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  @@id([travelPlanId, locationId])
+}
+
+model TravelPlanBlockLocation {
+  blockId    String @db.Uuid
+  locationId String @db.Uuid
+  order      Int
+
+  block    TravelPlanBlock @relation(fields: [blockId], references: [id], onDelete: Cascade)
+  location Location        @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  @@id([blockId, locationId])
+}
+
+model Like {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @db.Uuid
+  blogId       String?  @db.Uuid
+  journalId    String?  @db.Uuid
+  travelPlanId String?  @db.Uuid
+  createdAt    DateTime @default(now())
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  blog       Blog?       @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  journal    Journal?    @relation(fields: [journalId], references: [id], onDelete: Cascade)
+  travelPlan TravelPlan? @relation(fields: [travelPlanId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, blogId])
+  @@unique([userId, journalId])
+  @@unique([userId, travelPlanId])
+}
+
+model Save {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @db.Uuid
+  blogId       String?  @db.Uuid
+  journalId    String?  @db.Uuid
+  travelPlanId String?  @db.Uuid
+  createdAt    DateTime @default(now())
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  blog       Blog?       @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  journal    Journal?    @relation(fields: [journalId], references: [id], onDelete: Cascade)
+  travelPlan TravelPlan? @relation(fields: [travelPlanId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, blogId])
+  @@unique([userId, journalId])
+  @@unique([userId, travelPlanId])
+}
+
+model Comment {
+  id           String        @id @default(uuid()) @db.Uuid
+  authorId     String        @db.Uuid
+  parentId     String?       @db.Uuid
+  blogId       String?       @db.Uuid
+  journalId    String?       @db.Uuid
+  travelPlanId String?       @db.Uuid
+  body         String
+  status       CommentStatus @default(UNVERIFIED)
+  depth        Int           @default(0)
+  createdAt    DateTime      @default(now())
+
+  author     User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent     Comment?    @relation("Replies", fields: [parentId], references: [id], onDelete: Cascade)
+  blog       Blog?       @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  journal    Journal?    @relation(fields: [journalId], references: [id], onDelete: Cascade)
+  travelPlan TravelPlan? @relation(fields: [travelPlanId], references: [id], onDelete: Cascade)
+  replies    Comment[]   @relation("Replies")
+
+  @@index([blogId, status, createdAt])
+  @@index([journalId, status, createdAt])
+  @@index([travelPlanId, status, createdAt])
+  @@index([parentId])
+}
+
+model Notification {
+  id          String           @id @default(uuid()) @db.Uuid
+  recipientId String           @db.Uuid
+  type        NotificationType
+  isRead      Boolean          @default(false)
+  message     String
+  linkUrl     String?
+  actorId     String?          @db.Uuid
+  createdAt   DateTime         @default(now())
+
+  recipient User  @relation("recipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  actor     User? @relation("actor", fields: [actorId], references: [id], onDelete: Cascade)
+
+  @@index([recipientId, isRead, createdAt])
+}
+
+model PendingContentChat {
+  id            String      @id @default(uuid()) @db.Uuid
+  contentType   ContentType
+  blogId        String?     @db.Uuid
+  journalId     String?     @db.Uuid
+  travelPlanId  String?     @db.Uuid
+  authorId      String      @db.Uuid
+  editorId      String      @db.Uuid
+  lastMessageAt DateTime?
+  createdAt     DateTime    @default(now())
+
+  author     User          @relation("author", fields: [authorId], references: [id], onDelete: Cascade)
+  editor     User          @relation("editor", fields: [editorId], references: [id], onDelete: Cascade)
+  blog       Blog?         @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  journal    Journal?      @relation(fields: [journalId], references: [id], onDelete: Cascade)
+  travelPlan TravelPlan?   @relation(fields: [travelPlanId], references: [id], onDelete: Cascade)
+  messages   ChatMessage[]
+
+  @@index([authorId])
+  @@index([editorId])
+}
+
+model ChatMessage {
+  id        String   @id @default(uuid()) @db.Uuid
+  chatId    String   @db.Uuid
+  senderId  String   @db.Uuid
+  body      String
+  createdAt DateTime @default(now())
+
+  chat   PendingContentChat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  sender User               @relation(fields: [senderId], references: [id], onDelete: Cascade)
+}
+
+model ContentView {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String?  @db.Uuid
+  ipHash       String?
+  blogId       String?  @db.Uuid
+  journalId    String?  @db.Uuid
+  travelPlanId String?  @db.Uuid
+  hasFullRead  Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  user       User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  blog       Blog?       @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  journal    Journal?    @relation(fields: [journalId], references: [id], onDelete: Cascade)
+  travelPlan TravelPlan? @relation(fields: [travelPlanId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, blogId])
+  @@unique([userId, journalId])
+  @@unique([userId, travelPlanId])
+  @@unique([ipHash, blogId])
+  @@unique([ipHash, journalId])
+  @@unique([ipHash, travelPlanId])
+}

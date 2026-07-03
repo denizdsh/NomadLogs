@@ -1,0 +1,27 @@
+{
+  "name": "@nomadlogs/db",
+  "version": "1.0.0",
+  "description": "NomadLogs shared database package (Prisma)",
+  "type": "module",
+  "main": "index.ts",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "generate": "prisma generate",
+    "migrate:dev": "prisma migrate dev",
+    "migrate:deploy": "prisma migrate deploy",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "prisma": "^7.8.0"
+  },
+  "dependencies": {
+    "@prisma/client": "^7.8.0",
+    "dotenv": "^16.5.0"
+  }
+}
