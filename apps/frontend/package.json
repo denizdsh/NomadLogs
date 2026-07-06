@@ -9,20 +9,31 @@
     "typecheck": "react-router typegen && tsc"
   },
   "dependencies": {
+    "@editorjs/editorjs": "^2.31.6",
+    "@editorjs/header": "^2.8.9",
+    "@editorjs/image": "^2.10.3",
+    "@editorjs/list": "^2.0.9",
+    "@editorjs/underline": "^1.2.1",
     "@react-router/node": "7.14.0",
     "@react-router/serve": "7.14.0",
     "@tanstack/react-query": "^5.100.5",
     "@trpc/client": "^11.16.0",
     "@trpc/react-query": "^11.16.0",
+    "@xstate/react": "^6.1.0",
     "isbot": "^5.1.36",
+    "leaflet": "^1.9.4",
+    "lucide-react": "^1.23.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
+    "react-leaflet": "^5.0.0-rc.2",
     "react-router": "7.14.0",
-    "tailwindcss": "^4.2.4"
+    "tailwindcss": "^4.2.4",
+    "xstate": "^5.32.4"
   },
   "devDependencies": {
     "@react-router/dev": "7.14.0",
     "@tailwindcss/vite": "^4.2.4",
+    "@types/leaflet": "^1.9.21",
     "@types/node": "^22",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",

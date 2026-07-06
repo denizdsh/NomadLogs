@@ -1,15 +1,647 @@
 @import "tailwindcss";
 
+@variant dark (&:where(.dark, .dark *));
+
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif,
-    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-serif: "Lora", serif;
+  --font-sans: "Plus Jakarta Sans", sans-serif;
+
+  /* Theme color mappings */
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-tertiary: var(--tertiary);
+  --color-neutral: var(--neutral);
+  --color-surface: var(--surface);
+  --color-on-surface: var(--on-surface);
+  --color-on-surface-muted: var(--on-surface-muted);
+  --color-border-custom: var(--border-custom);
+
+  /* Semantic status colors */
+  --color-error: var(--error-status);
+  --color-success: var(--success-status);
+  --color-warning: var(--warning-status);
+  --color-info: var(--info-status);
+
+  /* Spacing tokens */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+
+  /* Border radius tokens */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  /* Explicit Max-Width configurations to prevent spacing overrides */
+  --max-width-xs: 20rem;
+  --max-width-sm: 24rem;
+  --max-width-md: 28rem;
+  --max-width-lg: 32rem;
+  --max-width-xl: 36rem;
+  --max-width-2xl: 42rem;
+  --max-width-3xl: 48rem;
+  --max-width-4xl: 56rem;
+  --max-width-5xl: 64rem;
+  --max-width-6xl: 72rem;
+  --max-width-7xl: 80rem;
 }
+
+:root {
+  /* Light Theme variables */
+  --primary: #1a4d3e;
+  --secondary: #3d6f5b;
+  --tertiary: #e07a5f;
+  --neutral: #faf9f6;
+  --surface: #ffffff;
+  --on-surface: #1a201c;
+  --on-surface-muted: #5c6b62;
+  --border-custom: #e2e8f0;
+
+  --error-status: #c84b31;
+  --success-status: #2e7d32;
+  --warning-status: #d97706;
+  --info-status: #3b7197;
+
+  /* Surface elevated (slight shadow alternative) */
+  --surface-elevated: #f7f8f6;
+
+  color-scheme: light;
+}
+
+/* System preference dark mode */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --primary: #4eaa8c;
+    --secondary: #3d6f5b;
+    --tertiary: #f2cc8f;
+    --neutral: #0d1311;
+    --surface: #161e1a;
+    --on-surface: #f3f5f4;
+    --on-surface-muted: #8fa399;
+    --border-custom: #232e29;
+
+    --error-status: #e05a47;
+    --success-status: #52b788;
+    --warning-status: #f4a261;
+    --info-status: #72a0c1;
+
+    --surface-elevated: #1c2620;
+
+    color-scheme: dark;
+  }
+}
+
+/* Explicit class-based dark mode toggle */
+.dark {
+  --primary: #4eaa8c;
+  --secondary: #3d6f5b;
+  --tertiary: #f2cc8f;
+  --neutral: #0d1311;
+  --surface: #161e1a;
+  --on-surface: #f3f5f4;
+  --on-surface-muted: #8fa399;
+  --border-custom: #232e29;
+
+  --error-status: #e05a47;
+  --success-status: #52b788;
+  --warning-status: #f4a261;
+  --info-status: #72a0c1;
+
+  --surface-elevated: #1c2620;
+
+  color-scheme: dark;
+}
+
+/* Explicit class-based light mode */
+.light {
+  --primary: #1a4d3e;
+  --secondary: #3d6f5b;
+  --tertiary: #e07a5f;
+  --neutral: #faf9f6;
+  --surface: #ffffff;
+  --on-surface: #1a201c;
+  --on-surface-muted: #5c6b62;
+  --border-custom: #e2e8f0;
+
+  --error-status: #c84b31;
+  --success-status: #2e7d32;
+  --warning-status: #d97706;
+  --info-status: #3b7197;
+
+  --surface-elevated: #f7f8f6;
+
+  color-scheme: light;
+}
+
+/* ─── Base Styles ─── */
 
 html,
 body {
-  @apply bg-white dark:bg-gray-950;
+  background-color: var(--neutral);
+  color: var(--on-surface);
+  font-family: var(--font-sans);
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 
-  @media (prefers-color-scheme: dark) {
-    color-scheme: dark;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-serif);
+  color: var(--on-surface);
+}
+
+/* ─── Typography Utility Classes ─── */
+
+.text-headline-display {
+  font-family: var(--font-serif);
+  font-size: 3rem;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.text-headline-lg {
+  font-family: var(--font-serif);
+  font-size: 2.25rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.text-headline-md {
+  font-family: var(--font-serif);
+  font-size: 1.75rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.text-body-lg {
+  font-family: var(--font-sans);
+  font-size: 1.125rem;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+.text-body-md {
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.text-body-sm {
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.45;
+}
+
+.text-label-lg {
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.text-label-md {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.text-label-sm {
+  font-family: var(--font-sans);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+/* ─── Skeleton Shimmer Animation ─── */
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
   }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--border-custom) 25%,
+    var(--surface-elevated) 50%,
+    var(--border-custom) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: var(--radius-md);
+}
+
+/* ─── Verification Status Gradients ─── */
+
+.verification-unverified {
+  border-top: 3px solid transparent;
+  border-image: linear-gradient(90deg, #9ca3af, #6b7280, #9ca3af) 1;
+}
+
+.verification-pending {
+  border-top: 3px solid transparent;
+  border-image: linear-gradient(90deg, #f59e0b, #d97706, #f59e0b) 1;
+}
+
+.verification-verified {
+  border-top: 3px solid transparent;
+  border-image: linear-gradient(
+      90deg,
+      var(--success-status),
+      #34d399,
+      var(--success-status)
+    )
+    1;
+}
+
+/* ─── Scrollbar Styling ─── */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-custom);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--on-surface-muted);
+}
+
+/* ─── Focus Visible Ring ─── */
+
+*:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ─── Custom Utility: Draggable Divider ─── */
+
+.draggable-divider {
+  width: 6px;
+  cursor: col-resize;
+  background: var(--border-custom);
+  transition: background-color 0.2s ease;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.draggable-divider::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 2px;
+  height: 32px;
+  background: var(--on-surface-muted);
+  border-radius: var(--radius-full);
+  opacity: 0.5;
+  transition: opacity 0.2s ease;
+}
+
+.draggable-divider:hover {
+  background: var(--secondary);
+}
+
+.draggable-divider:hover::after {
+  opacity: 1;
+}
+
+/* ─── Notification dot ─── */
+
+.notification-dot {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  min-width: 18px;
+  height: 18px;
+  border-radius: var(--radius-full);
+  background: var(--tertiary);
+  color: var(--neutral);
+  font-size: 0.625rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+}
+
+/* ─── Comment indent line ─── */
+
+.comment-indent {
+  border-left: 2px solid var(--border-custom);
+  padding-left: var(--spacing-md);
+  margin-left: var(--spacing-md);
+}
+
+/* ─── Leaflet overrides for theming ─── */
+
+.leaflet-container {
+  background: var(--surface) !important;
+  border-radius: var(--radius-lg);
+  font-family: var(--font-sans) !important;
+}
+
+/* Dark mode Leaflet popups and controls */
+.dark .leaflet-popup-content-wrapper,
+.dark .leaflet-popup-tip {
+  background-color: var(--surface) !important;
+  color: var(--on-surface) !important;
+  border: 1px solid var(--border-custom);
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.5),
+    0 4px 6px -2px rgba(0, 0, 0, 0.5) !important;
+}
+
+.dark .leaflet-popup-content {
+  color: var(--on-surface) !important;
+  font-family: var(--font-sans) !important;
+}
+
+.dark .leaflet-bar a {
+  background-color: var(--surface) !important;
+  color: var(--on-surface) !important;
+  border-color: var(--border-custom) !important;
+}
+
+.dark .leaflet-bar a:hover {
+  background-color: var(--border-custom) !important;
+  color: var(--on-surface) !important;
+}
+
+.dark .leaflet-control-attribution {
+  background-color: rgba(26, 38, 34, 0.8) !important;
+  color: var(--on-surface-muted) !important;
+  border-top-left-radius: 4px;
+}
+
+.dark .leaflet-control-attribution a {
+  color: var(--primary) !important;
+}
+
+/* ─── Fade-in animation ─── */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* ─── Slide-down animation ─── */
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-down {
+  animation: slideDown 0.25s ease-out;
+}
+
+/* ─── Toast animation ─── */
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes toastOut {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+.toast-enter {
+  animation: toastIn 0.3s ease-out;
+}
+
+.toast-exit {
+  animation: toastOut 0.3s ease-in forwards;
+}
+
+/* ─── Subtle pulse for unread notifications ─── */
+
+@keyframes subtlePulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+
+.unread-pulse {
+  animation: subtlePulse 2s ease-in-out infinite;
+}
+
+/* ─── Thematic text selection and premium scrollbars ─── */
+
+::selection {
+  background-color: var(--primary);
+  color: var(--neutral);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-custom);
+  /* border-radius: var(--radius-full); */
+  border-radius: 1px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--on-surface-muted);
+}
+
+/* ─── Editor.js Custom & Dark Mode Styling ─── */
+
+.codex-editor {
+  color: var(--on-surface) !important;
+  font-family: var(--font-sans);
+}
+
+.codex-editor path {
+  fill: currentColor !important;
+}
+
+.ce-paragraph {
+  font-family: var(--font-sans);
+  color: var(--on-surface) !important;
+  font-size: 1rem !important;
+  line-height: 1.6 !important;
+}
+
+.ce-header {
+  font-family: var(--font-serif);
+  font-weight: 600 !important;
+  color: var(--on-surface) !important;
+  margin-top: 1.5rem !important;
+  margin-bottom: 0.75rem !important;
+}
+
+/* Toolbars & Popovers */
+.ce-popover,
+.ce-inline-toolbar,
+.ce-conversion-toolbar {
+  background-color: var(--surface) !important;
+  border: 1px solid var(--border-custom) !important;
+  color: var(--on-surface) !important;
+  box-shadow:
+    0 10px 25px -5px rgba(0, 0, 0, 0.1),
+    0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+  border-radius: var(--radius-lg) !important;
+}
+
+.dark .ce-popover,
+.dark .ce-inline-toolbar,
+.dark .ce-conversion-toolbar {
+  box-shadow:
+    0 10px 25px -5px rgba(0, 0, 0, 0.4),
+    0 8px 10px -6px rgba(0, 0, 0, 0.4) !important;
+}
+
+.ce-popover__item,
+.ce-popover__item-icon,
+.ce-inline-tool,
+.ce-conversion-tool {
+  color: var(--on-surface) !important;
+}
+
+.ce-popover__item:hover,
+.ce-inline-tool:hover,
+.ce-conversion-tool:hover {
+  background-color: var(--border-custom) !important;
+}
+
+.ce-popover__item-icon {
+  background-color: var(--neutral) !important;
+  border: 1px solid var(--border-custom) !important;
+}
+
+.ce-popover__item--active {
+  background-color: var(--primary) !important;
+  color: var(--neutral) !important;
+}
+
+.ce-popover__item--active .ce-popover__item-icon {
+  color: var(--primary) !important;
+  background-color: var(--neutral) !important;
+}
+
+.ce-toolbar__plus,
+.ce-toolbar__settings-btn {
+  color: var(--on-surface) !important;
+  background-color: var(--surface) !important;
+  border: 1px solid var(--border-custom) !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+}
+
+.ce-toolbar__plus:hover,
+.ce-toolbar__settings-btn:hover {
+  background-color: var(--border-custom) !important;
+}
+
+/* Image Tool Styling */
+.cdx-input,
+.image-tool__caption {
+  background-color: var(--neutral) !important;
+  border: 1px solid var(--border-custom) !important;
+  color: var(--on-surface) !important;
+  border-radius: var(--radius-md) !important;
+  padding: 8px 12px !important;
+}
+
+.dark .cdx-search-field__input {
+  color: var(--neutral);
+}
+
+.image-tool__image {
+  border-radius: var(--radius-lg) !important;
+  overflow: hidden;
+  border: 1px solid var(--border-custom);
+}
+
+.image-tool__image-picture {
+  max-width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+.cdx-button {
+  background-color: var(--primary) !important;
+  color: var(--neutral) !important;
+  border: none !important;
+  border-radius: var(--radius-md) !important;
+  font-weight: 500 !important;
+  transition: opacity 0.2s ease !important;
+}
+
+.cdx-button:hover {
+  opacity: 0.9 !important;
+}
+
+/* Placeholder styles */
+.codex-editor__placeholder {
+  color: var(--on-surface-muted) !important;
+  font-family: var(--font-sans);
 }
